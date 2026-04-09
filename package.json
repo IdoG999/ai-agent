@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/webhook.ts",
+    "dev:poll": "tsx watch src/poll.ts",
     "start": "node dist/webhook.js",
+    "start:poll": "node dist/poll.js",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "telegram:getme": "node scripts/telegram-cli.mjs getMe",

@@ -32,6 +32,42 @@ export function truncateForTelegram(text: string, maxLen = TELEGRAM_MAX_MESSAGE_
   return text.slice(0, maxLen - suffix.length) + suffix;
 }
 
+export async function deleteTelegramWebhook(botToken: string): Promise<void> {
+  const url = `https://api.telegram.org/bot${botToken}/deleteWebhook`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ drop_pending_updates: false }),
+  });
+  const data = (await res.json()) as { ok?: boolean; description?: string };
+  if (!res.ok || !data.ok) {
+    throw new Error(`deleteWebhook failed: ${res.status} ${JSON.stringify(data)}`);
+  }
+}
+
+type GetUpdatesResult = { update_id: number; message?: TelegramMessage; edited_message?: TelegramMessage };
+
+export async function fetchTelegramUpdates(
+  botToken: string,
+  params: { offset: number; timeout: number }
+): Promise<GetUpdatesResult[]> {
+  const url = `https://api.telegram.org/bot${botToken}/getUpdates`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      offset: params.offset,
+      timeout: params.timeout,
+      allowed_updates: ["message", "edited_message"],
+    }),
+  });
+  const data = (await res.json()) as { ok?: boolean; result?: GetUpdatesResult[]; description?: string };
+  if (!res.ok || !data.ok || !Array.isArray(data.result)) {
+    throw new Error(`getUpdates failed: ${res.status} ${JSON.stringify(data)}`);
+  }
+  return data.result;
+}
+
 export async function sendTelegramTextReply(params: {
   botToken: string;
   chatId: number;

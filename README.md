@@ -1,13 +1,33 @@
 # AI agent (Telegram bot)
 
-Telegram [Bot API](https://core.telegram.org/bots/api) webhook server that receives text messages, runs an LLM-backed agent ([`src/agent.ts`](src/agent.ts)), and replies with `sendMessage`.
+Telegram [Bot API](https://core.telegram.org/bots/api) bot: **`getUpdates` long polling** (no tunnel) or **webhook** + HTTPS tunnel. Both use [`src/agent.ts`](src/agent.ts) and reply with `sendMessage`.
 
-## Prerequisites
+## Easiest on public Wi‑Fi / library (no URL, no `setWebhook`)
+
+Your laptop calls Telegram (**outbound** HTTPS). You do **not** paste any `https://…` host. **Do not copy placeholder text** from docs; there is no tunnel URL in this mode.
+
+1. **`npm install`** and configure **`.env`** (`TELEGRAM_BOT_TOKEN`, LLM or `USE_LLM=false`).
+2. **`npm run telegram:getme`** — confirm **`"ok": true`**.
+3. Run:
+
+   ```bash
+   npm run dev:poll
+   ```
+
+4. Message your bot on Telegram. On startup the app **removes any old webhook** so polling works.
+
+Stop with **Ctrl+C**. Production: **`npm run build`** then **`npm run start:poll`**.
+
+Optional: **`TELEGRAM_POLL_TIMEOUT`** — long-poll seconds (max 50, default 50).
+
+See [`src/poll.ts`](src/poll.ts).
+
+## Prerequisites (webhook mode)
 
 - Node.js 20+
 - A Telegram bot token from [@BotFather](https://t.me/BotFather)
-- A way to get a **public HTTPS URL** that Telegram trusts. If **`ngrok` is not installed** (`zsh: command not found: ngrok`), use **Cloudflare Tunnel (`cloudflared`)** — see [Run from scratch](#run-from-scratch-step-by-step) below. **localtunnel** often breaks Telegram with **SSL certificate errors**; avoid it unless you are only testing without Telegram webhooks.
-- **LLM**: OpenAI in the cloud, or **local Ollama** (see Environment), or set `USE_LLM=false` to echo messages while testing.
+- A **public HTTPS URL** (ngrok, Cloudflare tunnel, or deployed host) if you use **webhook** mode — [Run from scratch](#run-from-scratch-step-by-step). Prefer **[polling](#easiest-on-public-wi-fi--library-no-url-no-setwebhook)** when tunnels are blocked.
+- **LLM**: OpenAI in the cloud, **local Ollama** (see Environment), or **`USE_LLM=false`** to echo while testing.
 
 ## Environment
 
@@ -23,6 +43,7 @@ Copy `.env.example` to `.env` and fill in values.
 | `PORT` | Local HTTP port (default 3000) |
 | `USE_LLM` | `true` to call the configured LLM; `false` to echo user text (testing) |
 | `AGENT_SYSTEM_PROMPT` | Optional override for the assistant system message |
+| `TELEGRAM_POLL_TIMEOUT` | Optional. Long polling timeout in seconds for **`npm run dev:poll`** (max **50**, default **50**) |
 
 ### Bot name vs API token
 
@@ -167,7 +188,8 @@ In Telegram (app or web), open **`@username`** from `getMe` and send **text**.
 ## Project layout
 
 - [`src/webhook.ts`](src/webhook.ts) — HTTP server, Telegram POST `/webhook`, optional secret header
-- [`src/telegram.ts`](src/telegram.ts) — parse `Update`, `sendMessage`, truncate to Telegram limits
+- [`src/poll.ts`](src/poll.ts) — long polling (`getUpdates`), no tunnel; calls `deleteWebhook` on startup
+- [`src/telegram.ts`](src/telegram.ts) — parse `Update`, `sendMessage`, `getUpdates`, `deleteWebhook`
 - [`src/agent.ts`](src/agent.ts) — LLM (OpenAI or Ollama) or echo when `USE_LLM=false`
 
 ## Limitations
