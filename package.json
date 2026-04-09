@@ -7,7 +7,10 @@
     "dev": "tsx watch src/webhook.ts",
     "start": "node dist/webhook.js",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "telegram:getme": "node scripts/telegram-cli.mjs getMe",
+    "telegram:webhook": "node scripts/telegram-cli.mjs webhookInfo",
+    "telegram:set-webhook": "node scripts/telegram-cli.mjs setWebhook"
   },
   "engines": {
     "node": ">=20"

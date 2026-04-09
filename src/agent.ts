@@ -21,16 +21,22 @@ export async function runAgent(userText: string): Promise<string> {
     return `Echo: ${userText}`;
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const baseURL = process.env.OPENAI_BASE_URL?.trim();
+  const apiKey =
+    process.env.OPENAI_API_KEY?.trim() || (baseURL ? "ollama" : "");
   if (!apiKey) {
-    return "Agent is misconfigured: missing OPENAI_API_KEY. Set it or set USE_LLM=false to echo.";
+    return "Agent is misconfigured: set OPENAI_API_KEY (cloud) or OPENAI_BASE_URL (e.g. Ollama at http://127.0.0.1:11434/v1), or USE_LLM=false to echo.";
   }
 
+  const model =
+    process.env.OPENAI_MODEL?.trim() ||
+    (baseURL ? "llama3.2" : "gpt-4o-mini");
+
   const system = process.env.AGENT_SYSTEM_PROMPT?.trim() || DEFAULT_SYSTEM;
-  const client = new OpenAI({ apiKey });
+  const client = new OpenAI(baseURL ? { apiKey, baseURL } : { apiKey });
 
   const completion = await client.chat.completions.create({
-    model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+    model,
     temperature: 0.3,
     max_tokens: 500,
     messages: [
