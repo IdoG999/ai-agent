@@ -61,20 +61,17 @@ Copy `.env.example` to `.env` and fill in values.
 
 ## Git / GitHub
 
-This folder is intended to track [github.com/IdoG999/ai-agent](https://github.com/IdoG999/ai-agent).
+Remote: [github.com/IdoG999/ai-agent](https://github.com/IdoG999/ai-agent).
 
-If `git` is not initialized yet:
+- **Branch `main`**: full project (merged from the feature branch).
+- **Branch `feat/whatsapp-webhook-and-echo`**: same tip as `main` for continued webhook/agent work or PRs.
+
+If this directory was copied from a machine where `.git` was a tiny **gitfile** pointing at a temporary `gitdir`, run a fresh clone instead:
 
 ```bash
-cd "$(dirname "$0")"
-git init -b main
-git remote add origin https://github.com/IdoG999/ai-agent.git
-git add .
-git commit -m "Initial WhatsApp webhook and agent scaffold"
-git push -u origin main
+git clone https://github.com/IdoG999/ai-agent.git
+cd ai-agent
 ```
-
-Feature work for webhooks lives on branch `feat/whatsapp-webhook-and-echo` (create with `git checkout -b feat/whatsapp-webhook-and-echo`).
 
 ## Limitations
 
